@@ -23,7 +23,7 @@
 //      菲涅尔反射无法表现   (反射/折射与视点角度之间的关系)
 //      各向异性无法表现    e.g.拉丝金属 毛发
 
-Shader "Unlit/SecondLitShader"
+Shader "Custom/SecondLitShader"
 {
     Properties
     {

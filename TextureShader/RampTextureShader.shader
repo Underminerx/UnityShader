@@ -1,9 +1,11 @@
-Shader "Custom/SingleTextureShader"
+// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
+
+Shader "Custom/RampTextureShader"
 {
     Properties
     {
         _Color ("Color Tint", Color) = (1, 1, 1, 1)
-        _MainTex ("Main Tex", 2D) = "white" {}
+        _RampTex ("Ramp Tex", 2D) = "white" {}
         _Specular ("Specular", Color) = (1, 1, 1, 1)
         _Gloss ("Gloss", Range(8.0, 256)) = 20
     }
@@ -20,6 +22,12 @@ Shader "Custom/SingleTextureShader"
             #include "UnityCG.cginc"
             #include "Lighting.cginc"
 
+            fixed4 _Color;
+            sampler2D _RampTex;
+            float4 _RampTex_ST;
+            fixed4 _Specular;
+            float _Gloss;
+
             struct a2v
             {
                 float4 vertex : POSITION;
@@ -35,12 +43,6 @@ Shader "Custom/SingleTextureShader"
                 float2 uv : TEXCOORD2;
             };
 
-            fixed4 _Color;
-            sampler2D _MainTex;
-            // "纹理名_ST" 声明纹理属性 可以得到平移缩放的值 .xy存储缩放值 .zw存储偏移值  ST -> scale and translation
-            float4 _MainTex_ST;
-            fixed4 _Specular;
-            float _Gloss;
 
             v2f vert (a2v v)
             {
@@ -48,11 +50,11 @@ Shader "Custom/SingleTextureShader"
                 o.pos = UnityObjectToClipPos(v.vertex);
                 
                 o.worldNormal = UnityObjectToWorldNormal(v.normal);
+
                 o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
                 
-                o.uv = v.texcoord.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-                // 等价于
-                // o.uv = TRANSFORM_TEX(v.texcoord, _MainTex);
+                // 使用内置宏计算经过平移和偏移后的纹理坐标
+                o.uv = TRANSFORM_TEX(v.texcoord, _RampTex);
                 
                 return o;
             }
@@ -61,20 +63,18 @@ Shader "Custom/SingleTextureShader"
             {
                 fixed3 worldNormal = normalize(i.worldNormal);
                 fixed3 worldLightDir = normalize(UnityWorldSpaceLightDir(i.worldPos));
+                fixed ambient = UNITY_LIGHTMODEL_AMBIENT.xyz;
 
-                // 反射率
-                fixed3 albedo = tex2D(_MainTex, i.uv).rgb * _Color.rgb;
+                // 使用贴图去采样漫反射颜色
+                fixed halfLambert = 0.5 * dot(worldNormal, worldLightDir) + 0.5;    //半兰伯特模型 0.5的缩放 0.5的偏移
+                fixed3 diffuseColor = tex2D(_RampTex, fixed2(halfLambert, halfLambert)).rgb * _Color.rgb;
 
-                fixed3 ambient = UNITY_LIGHTMODEL_AMBIENT.xyz * albedo;
-
-                fixed3 diffuse =  _LightColor0.rgb * albedo * max(0, dot(worldNormal, worldLightDir));
+                fixed3 diffuse = _LightColor0.rgb * diffuseColor;
 
                 fixed3 viewDir = normalize(UnityWorldSpaceViewDir(i.worldPos));
-
                 fixed3 halfDir = normalize(worldLightDir + viewDir);
-                // 套公式
                 fixed3 specular = _LightColor0.rgb * _Specular.rgb * pow(max(0, dot(worldNormal, halfDir)), _Gloss);
- 
+
                 return fixed4(ambient + diffuse + specular, 1.0);
             }
             ENDCG

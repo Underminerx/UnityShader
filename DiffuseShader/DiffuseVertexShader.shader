@@ -3,11 +3,11 @@
 // Upgrade NOTE: replaced '_World2Object' with 'unity_WorldToObject'
 
 // 逐顶点漫反射shader
-Shader "Unlit/DiffuseVertexShader"
+Shader "Custom/DiffuseVertexShader"
 {
     Properties
     {
-        _Diffuse ("漫反射颜色", Color) = (1, 1, 1, 1)
+        _Diffuse ("Diffuse", Color) = (1, 1, 1, 1)
     }
 
     SubShader

@@ -3,13 +3,13 @@
 
 // 逐顶点高光反射shader
 // 高光部分明显不平滑 顶点着色器计算光照再插值过程是线性的 破坏了原计算的非线性关系 会出现较大的视觉问题 因此需要使用逐像素计算高光反射
-Shader "Unlit/SpecularVertexShader"
+Shader "Custom/SpecularVertexShader"
 {
     Properties
     {
-        _Diffuse ("漫反射颜色", Color) = (1, 1, 1, 1)
-        _Specular ("高光反射颜色", Color) = (1, 1, 1, 1)
-        _Gloss ("高光区域", Range(8.0, 256)) = 20
+        _Diffuse ("Diffuse", Color) = (1, 1, 1, 1)
+        _Specular ("specular", Color) = (1, 1, 1, 1)
+        _Gloss ("Gloss", Range(8.0, 256)) = 20
     }
     SubShader
     {

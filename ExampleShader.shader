@@ -1,4 +1,4 @@
-Shader "Unlit/ExampleShader"
+Shader "Custom/ExampleShader"
 {
     Properties
     {

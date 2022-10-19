@@ -1,11 +1,11 @@
 // Upgrade NOTE: replaced '_World2Object' with 'unity_WorldToObject'
 
 // ÖğÏñËØÂş·´Éäshader
-Shader "Unlit/DiffusePixelShader"
+Shader "Custom/DiffusePixelShader"
 {
     Properties
     {
-        _Diffuse ("Âş·´ÉäÑÕÉ«", Color) = (1, 1, 1, 1)
+        _Diffuse ("Diffuse", Color) = (1, 1, 1, 1)
     }
 
     SubShader

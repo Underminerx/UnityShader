@@ -2,11 +2,11 @@
 // 把点积结果从[-1,1]映射到[0,1]
 // 使得背光面也有明暗变化
 // 事实上无物理依据 仅仅是视觉加强效果
-Shader "Unlit/HalfLambertShader"
+Shader "Custom/HalfLambertShader"
 {
     Properties
     {
-        _Diffuse ("漫反射颜色", Color) = (1, 1, 1, 1)
+        _Diffuse ("Diffuse", Color) = (1, 1, 1, 1)
     }
 
     SubShader

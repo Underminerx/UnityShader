@@ -19,16 +19,16 @@
 
 // 视觉表现上没什么区别 但是第二种使用了更多插值寄存器来存储变换矩阵 更容易报错
 
-Shader "Unlit/NormalMapTangentSpaceShader"
+Shader "Custom/NormalMapTangentSpaceShader"
 {
     Properties
     {
-        _Color ("色调", Color) = (1, 1, 1, 1)
-        _MainTex ("主纹理", 2D) = "white" {}
-        _BumpMap ("法线纹理", 2D) = "bump" {}
-        _BumpScale ("凹凸比例", Float) = 1.0
-        _Specular ("高光反射颜色", Color) = (1, 1, 1, 1)
-        _Gloss ("高光区域", Range(8.0, 256)) = 20
+        _Color ("Color Tint", Color) = (1, 1, 1, 1)
+        _MainTex ("Main Tex", 2D) = "white" {}
+        _BumpMap ("Normal", 2D) = "bump" {}
+        _BumpScale ("Bump Scale", Float) = 1.0
+        _Specular ("Specular", Color) = (1, 1, 1, 1)
+        _Gloss ("Gloss", Range(8.0, 256)) = 20
     }
     SubShader
     {

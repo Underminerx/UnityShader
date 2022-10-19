@@ -2,13 +2,13 @@
 // Upgrade NOTE: replaced '_World2Object' with 'unity_WorldToObject'
 
 // Phong光照模型
-Shader "Unlit/SpecularPixelShader"
+Shader "Custom/SpecularPixelShader"
 {
     Properties
     {
-        _Diffuse ("漫反射颜色", Color) = (1, 1, 1, 1)
-        _Specular ("高光反射颜色", Color) = (1, 1, 1, 1)
-        _Gloss ("高光区域", Range(8.0, 256)) = 20
+        _Diffuse ("Diffuse", Color) = (1, 1, 1, 1)
+        _Specular ("Specular", Color) = (1, 1, 1, 1)
+        _Gloss ("Gloss", Range(8.0, 256)) = 20
     }
     SubShader
     {

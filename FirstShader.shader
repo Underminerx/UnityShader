@@ -20,7 +20,7 @@
 //      每个分支操作尽量少
 //      分支嵌套层数尽量少
 
-Shader "Unlit/FirstShader"
+Shader "Custom/FirstShader"
 {
     Properties
     {

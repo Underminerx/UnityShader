@@ -6,7 +6,7 @@
 //    uv.y = 1 - uv.y;
 //#endif
 
-Shader "Unlit/DebugShader"
+Shader "Custom/DebugShader"
 {
     Properties
     {
