@@ -3,7 +3,7 @@
 // 
 // 前向渲染路径		(Forward Rendering Path)
 // 延迟渲染路径		(Defferred Rendering Path)
-// 定点照明渲染路径	(Vertex Lit Rendering Path)   已经不再使用
+// 顶点照明渲染路径	(Vertex Lit Rendering Path)   已经不再使用
 // 
 // 一般一个项目只使用一种渲染路径
 // 
@@ -75,6 +75,73 @@
 // float3 ObjSpaceLightDir(float4 v)        仅前向渲染 输入 模型 空间中顶点位置 返回模型空间从该店到光源的光照方向 未归一化
 // float3 Shade4PointLights(...)            仅前向渲染 计算四个点光源的光照 参数是打包进矢量的光照数据 前向渲染通常使用其计算逐顶点光照
 //
+
+// 顶点照明渲染路径 5.x中就已不再使用
+//      对硬件要求最低,性能最高,效果最差的类型
+//          一般在一个pass中就可以完成
+//      
+
+// 延迟渲染路径 一种更为古老的渲染方法
+//      由于前向渲染可能造成瓶颈问题,延迟渲染近年又流行起来 
+//          延迟渲染会利用颜色缓冲、深度缓冲 以及G缓冲 存储了关心的表面其他信息(法线、位置、材质属性等)
+//
+// 延迟渲染原理
+//      两个pass 
+//          第一个不进行光照计算 仅计算可见片元 存入G-buffer
+//          第二个利用G-buffer的各个片元信息进行光照计算
+// Pass 1 {
+//     // 不进行真正的光照计算
+//     // 把光照计算信息存储到G-buffer中
+//     for (each primitive in this model) {
+//         for (each fragment covered by this primitive) {
+//             if (failed in depth test){
+//                 // 未通过深度测试 说明片元不可见
+//                 discard;
+//             } else {
+//                 // 若该片元可见
+//                 // 将需要的信息存入G-buffer
+//                 writeGBuffer(materialInfo, pos, normal);
+//             }
+//         }
+//     }
+// }
+   
+// Pass 2 {
+//     // 利用G-buffer里的信息进行真正光照计算
+//     for (each pixel in the screen) {
+//         if (the pixel is valid) {
+//             // 若该像素有效
+//             // 读取G-buffer信息
+//             readBuffer(pixel, materialInfo, pos, normal);
+   
+//             // 根据读到的信息进行光照计算
+//             float4 color = Shading(materialInfo, pos, normal, lightDir, viewDir);
+//             // 更新帧缓冲
+//             writeFrameBufer(pixel, color);  
+//         }
+//     }
+// }
+//
+// Unity中的延迟渲染
+//      Unity有两种延迟渲染 一种是遗留的 一种是5.x中的  若场景中使用了大量实时光照 则尽量选择延迟渲染路径 但是需要一定硬件支持
+//  延迟渲染中每个光源都可以按照逐像素处理
+//      缺点:不支持真正的抗锯齿功能
+//           不能处理半透明物体
+//            对显卡有一定要求(必须支持MRT、Shader Mode 3.0 及以上、深度渲染纹理以及双面的模板缓冲)
+//
+//      延迟渲染可访问的内置变量和函数
+//          _LightColor0    float4      光源颜色
+//          _LightMatrix0   float4x4    从世界空间到光源空间的变换矩阵,用于采样cookie和光强衰减纹理
+//
+
+// 平行光
+//      只有方向 没有位置 没有衰减概念(光强不会随着距离改变)
+
+// 点光源
+//      由空间中一个球体定义 强度衰减值可以由一个函数定义
+
+// 聚光灯
+//      
 Shader "Custom/RenderingPathTestShader"
 {
     Properties
