@@ -10,7 +10,6 @@ Shader "Custom/ForwardRenderingShader"
     }
     SubShader
     {
-
         Pass
         {
             // 此pass用于计算环境光 方向光 若场景中有多个平行光 则会选择最亮的那个传递给Base Pass进行逐像素处理
@@ -19,7 +18,7 @@ Shader "Custom/ForwardRenderingShader"
             CGPROGRAM
 
             // 确保在shader中使用光照衰减等光照变量可以被正确赋值
-            #pragma multi_compile_fwdbase
+            #pragma multi_compile_fwdadd
             
             #pragma vertex vert
             #pragma fragment frag
@@ -93,15 +92,14 @@ Shader "Custom/ForwardRenderingShader"
         Pass 
         {
             // 为其他逐像素光源定义Additional Pass
-            Tags { "LightMode" = "ForwardBase" }
+            Tags { "LightMode" = "ForwardAdd" }
 
             // 为了与之前计算得到的光照结果进行叠加 若没有Blend 则此Pass的结果会覆盖之前的光照结果
             Blend One One       // 不是必须设置为One One   也可以设置为SrcAlpha One等
             
             CGPROGRAM
             
-            #pragma muti_compile_fwdadd
-
+            #pragma multi_compile_fwdadd
 
             #pragma vertex vert
             #pragma fragment frag
@@ -178,16 +176,11 @@ Shader "Custom/ForwardRenderingShader"
                 #ifdef USING_DIRECTIONAL_LIGHT
                     fixed atten = 1.0;
                 #else
-                // 首先得到光源空间下的坐标,然后使用该坐标对衰减纹理进行采样得到衰减值
-                // #ifdef POINT
-                    #ifdef SPOT
-                        float3 lightCoord = mul(unity_WorldToLight, float4(i.worldPos, 1)).xyz;
-                        fixed atten = tex2D(_LightTexture0, dot(lightCoord, lightCoord).rr).UNITY_ATTEN_CHANNEL;
-                    #endif
+                    // 首先得到光源空间下的坐标,然后使用该坐标对衰减纹理进行采样得到衰减值
+                    float3 lightCoord = mul(unity_WorldToLight, float4(i.worldPos, 1)).xyz;
+                    fixed atten = tex2D(_LightTexture0, dot(lightCoord, lightCoord).rr).UNITY_ATTEN_CHANNEL;
                 #endif
-                // 不知道为什么atten参数会报错未声明 只好先去掉了 出了平行光之外的光源无法影响物体了
-                // return fixed4(ambient + (diffuse + specular) * atten, 1.0);
-                return fixed4(ambient + (diffuse + specular), 1.0);
+                return fixed4(ambient + (diffuse + specular) * atten, 1.0);
 
             }
             ENDCG
