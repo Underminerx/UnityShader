@@ -177,8 +177,13 @@ Shader "Custom/ForwardRenderingShader"
                     fixed atten = 1.0;
                 #else
                     // 首先得到光源空间下的坐标,然后使用该坐标对衰减纹理进行采样得到衰减值
-                    float3 lightCoord = mul(unity_WorldToLight, float4(i.worldPos, 1)).xyz;
-                    fixed atten = tex2D(_LightTexture0, dot(lightCoord, lightCoord).rr).UNITY_ATTEN_CHANNEL;
+                    float3 lightCoord = mul(unity_WorldToLight, float4(i.worldPos, 1)).xyz; // 把顶点从世界空间变换到光源空间
+                    // _LightTexture0是内置的一张纹理,为了减少计算
+                    fixed atten = tex2D(_LightTexture0, dot(lightCoord, lightCoord).rr).UNITY_ATTEN_CHANNEL; // 用坐标模的平方对衰减纹理进行采样
+                    // 真正计算光源的线性衰减 (经测试发现光源边界比较尖锐)
+                    // float distance = length(_WorldSpaceLightPos0.xyz - i.worldPos.xyz);
+                    // fixed atten = 1.0 / distance;
+                
                 #endif
                 return fixed4(ambient + (diffuse + specular) * atten, 1.0);
 
