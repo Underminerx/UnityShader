@@ -1,33 +1,7 @@
-// 实时渲染常用Shadow Map
-//      把摄像机放在与光源重合的位置上,那么阴影部分就是摄像机看不到的地方
-// 前向渲染路径中,若Important平行光开启了阴影,Unity则会计算阴影映射纹理(shadowmap)
-//      shadowmap本质上也是一张深度图,记录了从光源位置出发能看到的场景中距离其最近的表面位置
-
-// Unity选择使用一个额外的Pass来专门更新光源的阴影映射纹理,这个Pass就是LightMode标签被设置为ShadowCaster的Pass
-//      此Pass的渲染目标不是帧缓存,而是映射纹理(或深度纹理)
-//          首先把相机放置到光源位置,然后调用该Pass,对顶点变换后得到光源空间下的位置,据此输出深度信息到shadowmap中
-// 因此开启光源阴影后,渲染引擎会首先在当前渲染物体的shader中找到LightMode为ShadowCaster的Pass
-//      若没有,则会在FallBack指定的shader中寻找
-//          若仍然没有,此物体就无法向其他物体投射阴影(仍可接受来自其他物体的阴影)
-
-// Unity 5.x后,采用的阴影采样技术是 屏幕空间的阴影映射技术(Screenspace Shadow Map) 需要显卡支持MRT
-
-// 两种阴影相关情况
-//      1.物体接受来自其他物体的阴影,必须在shader中对阴影映射纹理(包括屏幕空间的阴影图)进行采样,把采样结果与最后的光照结果相乘
-//      2.物体向其他物体投射阴影,必须把该物体加入到光源的阴影映射纹理的计算中,从而让其他物体在对阴影映射纹理采样时可以得到该物体的相关信息
-//
-
-// 在物体的Mesh Renderer组件中选择该物体是否投射或者接受Shadow
-// 在灯光的Light组件中选择该灯光是否造成阴影
-
-// FallBack的主要作用就是让未找到ShadowCaster时向前继续寻找
-
-// 计算阴影三剑客
-//      SHADOW_COORDS
-//      TRANSFER_SHADOW
-//      SHADOW_ATTENUATION
-
-Shader "Custom/ShadowShader"
+// 统一管理光照衰减和阴影
+//      光照衰减和阴影对物体最终的渲染结构的影响本质上是相同的
+//          寻找一种方法同时计算两个信息 使用Unity内置宏UNITY_LIGHT_ATTENUATION
+Shader "Custom/AttenuationAndShadowUseBuildInFunsShader"
 {
     Properties
     {
@@ -71,7 +45,7 @@ Shader "Custom/ShadowShader"
                 float3 worldNormal : TEXCOORD0;
                 float3 worldPos : TEXCOORD1;
                 //1 宏 声明一个用于对阴影纹理采样的坐标,参数是下一个可用的插值寄存器的索引值
-                SHADOW_COORDS(2)    // 前边已经占用两个寄存器了
+                SHADOW_COORDS(2)
             };
 
             fixed4 _Diffuse;
@@ -86,7 +60,7 @@ Shader "Custom/ShadowShader"
                 o.worldNormal = UnityObjectToWorldNormal(v.normal);
                 o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
                 
-                //2 宏 用于在顶点着色器中计算上边声明的阴影纹理坐标
+                //2 宏 计算并向片元着色器传递阴影坐标
                 TRANSFER_SHADOW(o);
 
                 return o;
@@ -117,12 +91,14 @@ Shader "Custom/ShadowShader"
                 fixed3 specular = _LightColor0.rgb * _Specular.rgb * pow(max(0, dot(worldNormal, halfDir)), _Gloss);
  
                 // 衰减值置为1
-                fixed atten = 1.0;
-
+                // fixed atten = 1.0;
                 //3 宏 计算阴影值
-                fixed shadow = SHADOW_ATTENUATION(i);
+                //fixed shadow = SHADOW_ATTENUATION(i);
+                // 替换上两行代码 (宏内定义atten) 计算阴影和衰减的宏
+                    // 自动声明atten,传入v2f参数计算阴影值,世界空间坐标计算光源空间下的坐标再对光照衰减纹理进行次采样得到衰减值
+                UNITY_LIGHT_ATTENUATION(atten, i, i.worldPos); 
 
-                return fixed4(ambient + (diffuse + specular) * atten * shadow, 1.0);
+                return fixed4(ambient + (diffuse + specular) * atten, 1.0);
             }
             ENDCG
         }
