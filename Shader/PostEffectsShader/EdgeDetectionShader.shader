@@ -40,16 +40,16 @@ Shader "Custom/EdgeDetectionShader"
                 
                 half2 uv = v.texcoord;
 
-                // Sobel算子
+                // Sobel算子需要的9个邻域纹理坐标 从片元着色器中转移到顶点着色器,减少运算,提高性能
                 o.uv[0] = uv + _MainTex_TexelSize.xy * half2(-1, -1);
-                o.uv[1] = uv + _MainTex_TexelSize.xy * half2(0, -1);
-                o.uv[2] = uv + _MainTex_TexelSize.xy * half2(1, -1);
-                o.uv[3] = uv + _MainTex_TexelSize.xy * half2(-1, 01);
-                o.uv[4] = uv + _MainTex_TexelSize.xy * half2(0, 0);
-                o.uv[5] = uv + _MainTex_TexelSize.xy * half2(1, 0);
-                o.uv[6] = uv + _MainTex_TexelSize.xy * half2(-1, 1);
-                o.uv[7] = uv + _MainTex_TexelSize.xy * half2(0, 1);
-                o.uv[8] = uv + _MainTex_TexelSize.xy * half2(1, 1);
+                o.uv[1] = uv + _MainTex_TexelSize.xy * half2( 0, -1);
+                o.uv[2] = uv + _MainTex_TexelSize.xy * half2( 1, -1);
+                o.uv[3] = uv + _MainTex_TexelSize.xy * half2(-1,  0);
+                o.uv[4] = uv + _MainTex_TexelSize.xy * half2( 0,  0);
+                o.uv[5] = uv + _MainTex_TexelSize.xy * half2( 1,  0);
+                o.uv[6] = uv + _MainTex_TexelSize.xy * half2(-1,  1);
+                o.uv[7] = uv + _MainTex_TexelSize.xy * half2( 0,  1);
+                o.uv[8] = uv + _MainTex_TexelSize.xy * half2( 1,  1);
 
                 return o;
             }
