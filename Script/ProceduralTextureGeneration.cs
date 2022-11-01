@@ -3,6 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// 创建环境映射的立方体纹理三种方法:
+// 1.直接由一些特殊布局纹理创建(推荐, 可以对纹理数据进行压缩, 支持边缘修正、光滑反射glossy reflection、HDR)
+   
+//         提供一张具有特殊布局的纹理,例如类似立方体展开图的交叉布局、全景布局等,然后将Texture Type设置为Cubemap即可
+// 			在基于物理的渲染中, 通常使用一张HDR图像来生成高质量Cubemap
+// 	2.手动创建一个Cubemap资源, 把六张图赋给它
+// 		Unity 5 之前的方法
+// 	3.由脚本生成 (前两种都需要我们提前准备好立方体纹理的图像, 得到的立方体纹理往往是被场景中物体所共用的)
+// 				(但在理想情况下我们希望根据物体在场景中位置的不同生成不同的立方体纹理)
+//         通过Unity提供的Camera.RenderToCubemap函数实现,可以把从任意位置观察到的场景图像存储到六张图像中,从而创建出该位置上对应的立方体纹理
+
 [ExecuteInEditMode]
 public class ProceduralTextureGeneration : MonoBehaviour
 {
